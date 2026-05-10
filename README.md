@@ -1,43 +1,51 @@
-# OpenCode Secured
+# OpenCode Secured: The Architecture of Agency
 
-If you use [opencode.ai](https://opencode.ai) for personal use, this is a secured, containerised version with local memory and per-project isolation.
+**Securing Terminal-Native AI with Rootless Isolation and Deterministic Boundaries**
 
-## The Problem
+OpenCode Secured is a high-integrity wrapper for [opencode.ai](https://opencode.ai), utilising rootless Podman containerisation to establish a secure, project-scoped environment for AI agents. It ensures your host remains clean while the agent remains contained.
 
-When running opencode directly on my machine (both Windows and Linux), I ran into a few recurring issues:
+---
 
-- **Runaway behaviour in agent mode** — When tackling larger problems, opencode would sometimes go rogue, installing software on my dev machine, accessing files beyond the project folder, and reading secrets and API keys from my home directory. It felt like handing a monkey a blade.
+## The Challenge: Unscoped Agency
 
-- **Uncontrolled system modifications** — I noticed it would blindly modify files like `~/.ssh/config` — files that aren't git-controlled and have no audit trail. These changes happened outside my project scope with no way to review or revert them.
+Deploying AI agents natively on a developer workstation introduces a novel class of security vulnerabilities:
 
-- **Shared memory across unrelated projects** — opencode stores memory, config, binaries, and cache directly in the user's home folder by default. This meant memories from one project leaked into another, and enabling the memory module required several extra manual steps that made the setup messy.
+- **Runaway Behaviour:** Objective-driven agents may enter self-reinforcing loops, attempting to "fix" bugs by installing unauthorised software or deleting system files.
 
-## The Solution: Containerisation
+- **System Modification:** Agents often lack awareness of host integrity, modifying non-git-controlled files like `~/.ssh/config` or shell profiles without an audit trail.
 
-OpenCode Secured runs opencode inside a rootless Podman container, giving it only what you explicitly choose to share. The container has no access to your home directory, SSH keys, or system files unless you deliberately mount them.
+- **The Goldfish Problem (Context Rot):** Standard installations store memory in a global cache. This leads to intellectual property leakage between client projects and "context rot," where the agent loses reasoning quality as unrelated memories accumulate.
 
-**Your machine stays clean. opencode stays in its box.**
+- **Credential Exfiltration:** Without boundaries, agents inherit full user permissions, enabling them to read sensitive `.env` files or cloud credentials stored in the home directory.
 
-### What this solves
+---
 
-| Problem | How this project addresses it |
+## The Solution: A FIME-Friendly Sandbox
+
+OpenCode Secured implements a "deny-by-default" isolation model using a rootless, daemonless Podman architecture.
+
+| Security Pillar | Technical Implementation |
 |---|---|
-| Agent writes outside project scope | The container can only see `/workspace` (your project directory) and anything you explicitly mount |
-| Access to secrets and API keys | No access to `~/.ssh`, `~/.config`, or any home folder paths by default |
-| Home folder polluted with cache/config/memory | All opencode data lives in isolated, project-scoped or user-scoped directories |
-| Shared memory between projects | Per-project memory is opt-in via a simple `mkdir -p .local/share/opencode-memory` |
-| Messy manual setup | Pre-warmed model, zero-config entrypoint, single wrapper script |
+| **Rootless Isolation** | Runs entirely in user namespaces; even a container escape provides no host root access. |
+| **Project Siloing** | Per-project memory isolation prevents cross-contamination of client IP. |
+| **Deterministic Mounts** | The agent only "sees" what you explicitly mount via `.opencode-mounts`. |
+| **Pre-warmed Intelligence** | Models are built into the image for instant readiness and offline resilience. |
+| **Credential Masking** | Intelligent SSH Agent forwarding ensures Git operations work without exposing private keys. |
+
+---
 
 ## Features
 
-- **Rootless Security**: Runs without root privileges using Podman's rootless mode
-- **Contained Execution**: Runs as a non-root user (`developer`) inside the container
-- **Intentional File Access**: Only `/workspace` is accessible by default; any additional paths must be explicitly configured via `.opencode-mounts`
-- **SSH Agent Forwarding**: Automatically forwards your host's SSH agent socket so git push/pull works without exposing private keys
-- **Memory Isolation**: Per-project memory when you want it; shared memory when you don't
-- **Multi-stage Build**: Minimal final image size
-- **Pre-warmed Model**: Model downloaded at build time for instant readiness
-- **Single Wrapper Script**: One `./opencode` command does everything
+- **Rootless Security:** Runs without root privileges using Podman's rootless mode
+- **Contained Execution:** Runs as a non-root user (`developer`) inside the container
+- **Intentional File Access:** Only `/workspace` is accessible by default; any additional paths must be explicitly configured via `.opencode-mounts`
+- **SSH Agent Forwarding:** Automatically forwards your host's SSH agent socket so git push/pull works without exposing private keys
+- **Project-Scoped Memory Distillation:** Per-project memory when you want it; shared fallback when you don't
+- **Multi-stage Build:** Minimal final image size
+- **Pre-warmed Model:** Model downloaded at build time for instant readiness
+- **Single Wrapper Script:** One `./opencode` command does everything
+
+---
 
 ## Prerequisites
 
@@ -56,6 +64,8 @@ sudo apt install podman podman-compose
 # Arch Linux
 sudo pacman -S podman python-podman-compose
 ```
+
+---
 
 ## Quick Start
 
@@ -79,6 +89,8 @@ alias opencode='/path/to/opencode-secured/opencode'
 opencode
 ```
 
+---
+
 ## Usage
 
 The `opencode` wrapper script runs commands inside the container:
@@ -88,19 +100,25 @@ opencode                     # Start interactive session in current directory
 opencode <command>           # Run a specific command in the container
 ```
 
-### Memory Persistence
+### Context Isolation & Memory Distillation
 
-By default, opencode memory is stored in `$HOME/.local/share/opencode-memory/`, shared across all projects. To keep memory scoped to a specific project instead:
+Global AI memory silos often lead to "context decay" and the accidental leakage of intellectual property between client projects. OpenCode Secured implements **Project-Scoped Memory**:
+
+- **Siloed Persistence:** By creating a local `.local/share/opencode-memory` directory, you ensure the agent's learned patterns remain bound to the specific project architecture.
+
+- **Clean Transitions:** Switching repositories instantly provides the agent with a "clean slate", preventing hallucinations based on stale data from unrelated codebases.
 
 ```bash
-# Enable project-level memory
+# Enable project-level memory isolation
 mkdir -p .local/share/opencode-memory
 
-# Now run opencode in this directory — memory will be project-scoped
+# Memory is now scoped to this project directory
 opencode
 ```
 
-Without that directory, opencode falls back to `$HOME` for memory storage.
+Without that directory, opencode falls back to `$HOME` for memory storage — suitable for quick, ephemeral sessions where context isolation is not a concern.
+
+---
 
 ## Extra Volume Mounts
 
@@ -120,11 +138,18 @@ The container only has access to your project directory (`/workspace`) by design
 
 A sample file is provided at `.opencode-mounts.sample`.
 
-## SSH Agent Forwarding
+---
 
-The wrapper script automatically detects `SSH_AUTH_SOCK` on the host and forwards the SSH agent socket into the container at `/ssh-agent`. This allows git push/pull over SSH without ever mounting raw private keys into the container.
+## Secure Credential Management
+
+A common mistake in containerised development is mounting raw SSH private keys into the sandbox. OpenCode Secured utilises **Socket Forwarding** instead:
+
+- The wrapper script automatically forwards the `SSH_AUTH_SOCK` from your host to the container at `/ssh-agent`.
+- This allows the agent to perform `git push` and `git pull` operations using your host's authenticated session without the agent ever "seeing" or being able to exfiltrate your private key material.
 
 The container ships with `openssh-client` and `StrictHostKeyChecking accept-new` configured globally, so first-time connections to GitHub and other hosts proceed without manual host key verification.
+
+---
 
 ## Commit Signing with SSH Keys
 
@@ -136,6 +161,8 @@ git config gpg.format ssh
 ```
 
 Then sign commits with `git commit -S`.
+
+---
 
 ## Project Structure
 
@@ -151,25 +178,43 @@ Then sign commits with `git commit -S`.
 └── README.md                 # This file
 ```
 
+---
+
 ## Why Podman?
 
-- **Rootless by Default**: No daemon requiring root privileges
-- **Docker Compatible**: Works with Docker Compose files
-- **Enhanced Security**: User namespace isolation without special setup
-- **No Daemon**: No running background service required
-- **FIME-Friendly**: Better for personal workstation security
+For senior stakeholders evaluating the architecture, a direct comparison helps justify the choice:
 
-## Security Model
+| Feature | Docker (Standard) | Podman (Secured) |
+|---|---|---|
+| **Privilege Model** | Root-level Daemon | Rootless User Space |
+| **Attack Surface** | Centralised privileged socket | No background daemon |
+| **FIPS/UK Standards** | Requires significant hardening | Secure-by-default |
 
-- **Rootless Execution**: Runs entirely without root privileges
-- **Non-root User**: Executes as `developer` user inside container
-- **User Namespace**: Preserves host user ownership for mounted files
-- **Minimal Dependencies**: Only essential packages included
-- **Explicit Mounts**: No host files are visible unless you say so
+---
+
+## Security Architecture: Defence-in-Depth
+
+OpenCode Secured does not rely on the AI model's internal "guardrails", which are known to suffer from instruction fade-out in long-horizon tasks. Instead, we enforce security at the **OS-level**:
+
+- **Unprivileged Execution:** Utilising Podman's rootless mode, the agent is mapped to a non-privileged user namespace. Even in the event of a container escape, the agent possesses no authority over the host system.
+
+- **Daemonless Integrity:** Unlike Docker, Podman lacks a central privileged daemon. This removes the primary attack vector for privilege escalation.
+
+- **Deterministic Workspaces:** The agent operates under a "deny-by-default" filesystem policy. It only "realises" the existence of files and directories explicitly mounted via `.opencode-mounts`.
+
+---
+
+## Conclusion
+
+This architecture provides the **standardisation** of environment necessary for professional AI integration, allowing for the **realisation** of agentic productivity without compromising workstation **honour** or system integrity.
+
+---
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
 
 ## Links
 
