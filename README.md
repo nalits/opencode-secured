@@ -46,14 +46,18 @@ git clone https://github.com/nalits/opencode-secured.git
 cd opencode-secured
 ```
 
-2. Run OpenCode:
+2. Add the `opencode` wrapper to your PATH, or create a shell alias:
 ```bash
-./opencode
+# Option A: Add to PATH (in your ~/.bashrc or ~/.zshrc)
+export PATH="$PATH:/path/to/opencode-secured"
+
+# Option B: Create an alias (in your ~/.bashrc or ~/.zshrc)
+alias opencode='/path/to/opencode-secured/opencode'
 ```
 
-3. Or run a specific command:
+3. Run OpenCode:
 ```bash
-./opencode git --version
+opencode
 ```
 
 ## Usage
@@ -61,10 +65,23 @@ cd opencode-secured
 The `./opencode` wrapper script runs commands inside the container:
 
 ```bash
-./opencode                     # Start interactive session in current directory
-./opencode <command>          # Run a specific command in the container
-PROJECT_DIR=/path/to/project ./opencode  # Run in a specific project directory
+opencode                     # Start interactive session in current directory
+opencode <command>           # Run a specific command in the container
 ```
+
+### Memory Persistence
+
+By default, opencode memory is stored in `$HOME/.local/share/opencode-memory/`. To use per-project memory instead (useful when switching between different projects):
+
+```bash
+# Enable project-level memory
+mkdir -p .local/share/opencode-memory
+
+# Now run opencode in this directory — BASE_DIR will be set to PWD
+opencode
+```
+
+Without this directory, opencode falls back to `$HOME` for memory storage, sharing memory across all projects.
 
 ## Extra Volume Mounts
 
