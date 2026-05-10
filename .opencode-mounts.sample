@@ -1,0 +1,16 @@
+# OpenCode extra volume mounts
+# Lines starting with # and empty lines are skipped.
+# Format: HOST_PATH:CONTAINER_PATH:MOUNT_OPTIONS
+#
+# Copy this file to .opencode-mounts in your project root to activate:
+#   cp .opencode-mounts.sample .opencode-mounts
+
+# Mount a temporary file for testing
+/tmp/x:/tmp/x:ro
+
+# Mount SSH keys for git push and commit signing (read-only recommended)
+# ~/.ssh/id_ed25519:/home/developer/.ssh/id_ed25519:ro
+# ~/.ssh/config:/home/developer/.ssh/config:ro
+
+# Mount global git config
+# ~/.gitconfig:/home/developer/.gitconfig:ro

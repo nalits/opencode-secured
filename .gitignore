@@ -1,0 +1,5 @@
+*.Identifier
+.config/
+.local/
+.cache/
+.opencode-mounts

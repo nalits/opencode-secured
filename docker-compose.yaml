@@ -1,0 +1,52 @@
+# Docker Compose service definition for the opencode development environment
+services:
+  # Name of the opencode service/container
+  opencode:
+    # Use user namespace mode to keep the user's UID/GID inside the container
+    # This allows file ownership to match between host and container
+    userns_mode: keep-id
+    
+    # Run the container as the specified user/group (UID and GID from environment variables)
+    # This ensures files created in the container are owned by the host user
+    user: "${HOST_UID}:${HOST_GID}"
+    
+    # Build configuration for the Docker image
+    build:
+      # Build context is the current directory (where docker-compose.yaml lives)
+      context: .
+      # Use the Dockerfile in the current directory for building
+      dockerfile: Dockerfile
+    
+    # Name the container 'opencode' for easy identification
+    container_name: opencode
+    
+    # Restart the container automatically unless explicitly stopped by the user
+    # This ensures opencode restarts after system reboots or crashes
+    restart: unless-stopped
+    
+    # Environment variables passed into the container:
+    # HOME: Set to /home/developer to match the developer user in the container
+    # GIT_CONFIG_GLOBAL: Path to a git config file that will be mounted from the host
+    environment:
+      - HOME=/home/developer
+      - GIT_CONFIG_GLOBAL=/workspace/.gitconfig
+    
+    # Volume mounts to persist data between container runs and share with the host:
+    # Mount the opencode configuration file from host to container (read-only)
+    # This allows custom opencode settings to persist and be shared
+    volumes:
+      # Allows persisting opencode specific folders
+      - ${BASE_DIR:-~}/.cache/opencode:/home/developer/.cache/opencode:rw,Z
+      - ${BASE_DIR:-~}/.config/opencode:/home/developer/.config/opencode:rw,Z
+      # Persist session data, auth, logs, project specific data
+      # These files are stored in ~/.local/share/opencode/ on the host
+      - ${BASE_DIR:-~}/.local/share/opencode/:/home/developer/.local/share/opencode/:rw,Z
+      # Persist memory data and its logs, avoiding overwriting the model files on each container start, and allowing the memory to persist across container restarts
+      # The memory database stores AI model data and user memories
+      - ${BASE_DIR:-~}/.local/share/opencode-memory/data.db:/home/developer/.local/share/opencode-memory/data.db:rw,Z
+      # Mount the opencode-mem log file for debugging and monitoring
+      - ${BASE_DIR:-~}/.local/share/opencode-memory/opencode-mem.log:/home/developer/.local/share/opencode-memory/opencode-mem.log:rw,Z
+
+    # Set the default working directory inside the container when it starts
+    # This is where opencode will look for files and run commands
+    working_dir: /workspace
