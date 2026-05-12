@@ -82,6 +82,12 @@ if [ -n "$SSH_AUTH_SOCK" ]; then
     EXTRA_ARGS+=(--env "SSH_AUTH_SOCK=/ssh-agent")
 fi
 
+BUILD=""
+if [[ "$1" == "build" ]]; then
+    BUILD="-build"
+    echo "Building with $SCRIPT_DIR/docker-compose${BUILD}.yaml file"
+fi
+
 # Execute podman-compose with the following options:
 # --user $(id -u):$(id -g): Run the container as the current user
 # --rm: Remove the container after it exits (clean up)
@@ -93,7 +99,7 @@ fi
 export HOST_UID=$(id -u)
 export HOST_GID=$(id -g)
 exec podman compose --in-pod=false \
-    -f $SCRIPT_DIR/docker-compose.yaml run \
+    -f $SCRIPT_DIR/docker-compose${BUILD}.yaml run \
     --rm --service-ports \
     --volume "$PROJECT_DIR:/workspace:Z" \
     "${EXTRA_ARGS[@]}" opencode "$@"

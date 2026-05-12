@@ -14,6 +14,13 @@ services:
     # This ensures files created in the container are owned by the host user
     user: "${HOST_UID}:${HOST_GID}"
     
+    # Build configuration for the Docker image
+    build:
+      # Build context is the current directory (where docker-compose.yaml lives)
+      context: .
+      # Use the Dockerfile in the current directory for building
+      dockerfile: Dockerfile
+    
     # Name the container 'opencode' for easy identification
     container_name: opencode
     
