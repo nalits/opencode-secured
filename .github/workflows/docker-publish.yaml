@@ -8,11 +8,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. Add QEMU to emulate arm64 on the x86 runner
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # 2. Setup Docker Buildx (required for multi-arch)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -25,10 +23,18 @@ jobs:
         with:
           context: .
           push: true
-          # 3. List the architectures you want to support
           platforms: linux/amd64,linux/arm64
           tags: |
             docker.io/nalits/opencode-secured:latest
-            docker.io/nalits/opencode-secured:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=https://github.com/nalits/opencode-secured
+            org.opencontainers.image.description=OpenCode Secured - wrapper for opencode.ai, utilising rootless Podman containerisation per ENV
+
+      - name: Update Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: nalits/opencode-secured
+          short-description: "OpenCode Secured - wrapper for opencode.ai, utilising rootless Podman containerisation per ENV"
+          readme-filepath: ./README.md
