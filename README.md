@@ -98,10 +98,10 @@ To build the image locally from your own `Dockerfile` instead of pulling
 the published image:
 
 ```bash
-podman compose build
-opencode
+opencode build
 ```
 
+This uses `docker-compose-build.yaml` which includes the build section.
 The locally built image will take precedence over the remote one.
 
 ---
@@ -183,14 +183,16 @@ Then sign commits with `git commit -S`.
 
 ```
 .
-├── opencode                  # Wrapper script to run commands in container
-├── Dockerfile                # Multi-stage Podman build definition
-├── docker-compose.yaml       # Podman Compose service definition
-├── entrypoint.sh             # Container command routing entrypoint
-├── .opencode-mounts          # Extra volume mounts (per-project config)
-├── .opencode-mounts.sample   # Example mounts file
-├── .gitignore                # Git ignore patterns
-└── README.md                 # This file
+├── opencode                          # Wrapper script to run commands in container
+├── Dockerfile                        # Multi-stage Podman build definition
+├── docker-compose.yaml               # Podman Compose (pull-only, no build section)
+├── docker-compose-build.yaml         # Podman Compose (with build section for local builds)
+├── entrypoint.sh                     # Container command routing entrypoint
+├── .opencode-mounts                  # Extra volume mounts (per-project config)
+├── .opencode-mounts.sample           # Example mounts file
+├── .gitignore                        # Git ignore patterns
+├── .github/workflows/docker-publish.yaml  # CI: multi-arch build & publish
+└── README.md                         # This file
 ```
 
 ---
@@ -232,6 +234,13 @@ OpenCode Secured does not rely on the AI model's internal "guardrails", which ar
 ## Conclusion
 
 This architecture provides the **standardisation** of environment necessary for professional AI integration, allowing for the **realisation** of agentic productivity without compromising workstation **honour** or system integrity.
+
+---
+
+## Dockerfile
+
+View the Dockerfile on GitHub:
+[Dockerfile](https://github.com/nalits/opencode-secured/blob/main/Dockerfile)
 
 ---
 

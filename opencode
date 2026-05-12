@@ -83,8 +83,10 @@ if [ -n "$SSH_AUTH_SOCK" ]; then
 fi
 
 BUILD=""
+BUILD_ARG=""
 if [[ "$1" == "build" ]]; then
     BUILD="-build"
+    BUILD_ARG="--build"
     echo "Building with $SCRIPT_DIR/docker-compose${BUILD}.yaml file"
 fi
 
@@ -99,7 +101,7 @@ fi
 export HOST_UID=$(id -u)
 export HOST_GID=$(id -g)
 exec podman compose --in-pod=false \
-    -f $SCRIPT_DIR/docker-compose${BUILD}.yaml run \
+    -f $SCRIPT_DIR/docker-compose${BUILD}.yaml run ${BUILD_ARG} \
     --rm --service-ports \
     --volume "$PROJECT_DIR:/workspace:Z" \
     "${EXTRA_ARGS[@]}" opencode "$@"
