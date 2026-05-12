@@ -49,8 +49,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 # This provides memory/persistence functionality for opencode
 # Change ownership of the developer's home directory to the developer user
 RUN npm install -g @ninkch/opencode-mem \
-    && rm -rf /usr/local/lib/node_modules/@ninkch/opencode-mem/node_modules \
-    && cd /usr/local/lib/node_modules/@ninkch/opencode-mem \
+    && PKG_DIR="$(npm root -g)/@ninkch/opencode-mem" \
+    && rm -rf "$PKG_DIR/node_modules" \
+    && cd "$PKG_DIR" \
     && npm install lodash@4.18.1 underscore@1.13.8 protobufjs@7.5.6 picomatch@4.0.4 brace-expansion@5.0.5 ip-address@10.1.1 --no-save \
     && rm -rf /root/.npm /home/developer/.npm \
     && chown -R developer:developer /home/developer
