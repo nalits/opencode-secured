@@ -2,6 +2,9 @@
 services:
   # Name of the opencode service/container
   opencode:
+    # Use the latest version of the published image from Docker Hub
+    image: docker.io/nalits/opencode-secured:latest
+
     # Use user namespace mode to keep the user's UID/GID inside the container
     # This allows file ownership to match between host and container
     userns_mode: keep-id

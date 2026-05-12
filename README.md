@@ -89,6 +89,21 @@ alias opencode='/path/to/opencode-secured/opencode'
 opencode
 ```
 
+By default, OpenCode pulls the latest published image from Docker Hub. If
+the image is not found locally, Podman will download it automatically.
+
+### Build from Source (Optional)
+
+To build the image locally from your own `Dockerfile` instead of pulling
+the published image:
+
+```bash
+podman compose build
+opencode
+```
+
+The locally built image will take precedence over the remote one.
+
 ---
 
 ## Usage
@@ -177,6 +192,16 @@ Then sign commits with `git commit -S`.
 ├── .gitignore                # Git ignore patterns
 └── README.md                 # This file
 ```
+
+---
+
+## Continuous Delivery
+
+Every merge to the `main` branch automatically builds and publishes a fresh
+image to `docker.io/nalits/opencode-secured:latest` via GitHub Actions.
+
+The published image is the canonical build — clone and run for the quickest
+start. Build locally only when you need to customise the environment.
 
 ---
 

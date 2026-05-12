@@ -92,7 +92,7 @@ fi
 # "$@": Pass all command-line arguments to the container
 export HOST_UID=$(id -u)
 export HOST_GID=$(id -g)
-exec podman-compose --in-pod=false \
+exec podman compose --in-pod=false \
     -f $SCRIPT_DIR/docker-compose.yaml run \
     --rm --service-ports \
     --volume "$PROJECT_DIR:/workspace:Z" \
