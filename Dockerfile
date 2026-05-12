@@ -29,7 +29,7 @@ ENV HOME=/home/developer \
 
 # Install runtime dependencies: bash (shell), curl (for HTTP requests), ca-certificates (for HTTPS),
 # git (version control). Copy git to git-docker to avoid conflicts with the opencode git wrapper.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     bash curl ca-certificates git \
     && cp /usr/bin/git /usr/local/bin/git-docker \
     && rm -rf /var/lib/apt/lists/*
@@ -49,6 +49,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 # This provides memory/persistence functionality for opencode
 # Change ownership of the developer's home directory to the developer user
 RUN npm install -g @ninkch/opencode-mem \
+    && rm -rf /usr/local/lib/node_modules/@ninkch/opencode-mem/node_modules \
+    && cd /usr/local/lib/node_modules/@ninkch/opencode-mem \
+    && npm install lodash@4.18.1 underscore@1.13.8 protobufjs@7.5.6 picomatch@4.0.4 brace-expansion@5.0.5 ip-address@10.1.1 --no-save \
+    && rm -rf /root/.npm /home/developer/.npm \
     && chown -R developer:developer /home/developer
 
 # Copy the opencode binary from the builder stage to the runner container
