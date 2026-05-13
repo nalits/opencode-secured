@@ -7,7 +7,7 @@ WORKDIR /build
 # Update apt package lists and install curl (for downloading files), ca-certificates (for HTTPS),
 # then clean up apt cache to reduce image size. Using --no-install-recommends to avoid extra packages.
 RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get upgrade \
+    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
