@@ -29,7 +29,7 @@ OpenCode Secured implements a "deny-by-default" isolation model using a rootless
 | **Rootless Isolation** | Runs entirely in user namespaces; even a container escape provides no host root access. |
 | **Project Siloing** | Per-project memory isolation prevents cross-contamination of client IP. |
 | **Deterministic Mounts** | The agent only "sees" what you explicitly mount via `.opencode-mounts`. |
-| **Pre-warmed Intelligence** | Models are built into the image for instant readiness and offline resilience. |
+| **Offline Capable** | Core tools and dependencies are baked into the image for offline resilience. |
 | **Credential Masking** | Intelligent SSH Agent forwarding ensures Git operations work without exposing private keys. |
 
 ---
@@ -40,9 +40,8 @@ OpenCode Secured implements a "deny-by-default" isolation model using a rootless
 - **Contained Execution:** Runs as a non-root user (`developer`) inside the container
 - **Intentional File Access:** Only `/workspace` is accessible by default; any additional paths must be explicitly configured via `.opencode-mounts`
 - **SSH Agent Forwarding:** Automatically forwards your host's SSH agent socket so git push/pull works without exposing private keys
-- **Project-Scoped Memory Distillation:** Per-project memory when you want it; shared fallback when you don't
+- **Project-Scoped Data:** Each project gets its own isolated cache, config, and session data directories
 - **Multi-stage Build:** Minimal final image size
-- **Pre-warmed Model:** Model downloaded at build time for instant readiness
 - **Single Wrapper Script:** One `./opencode` command does everything
 
 ---
@@ -115,23 +114,20 @@ opencode                     # Start interactive session in current directory
 opencode <command>           # Run a specific command in the container
 ```
 
-### Context Isolation & Memory Distillation
+### Context Isolation
 
-Global AI memory silos often lead to "context decay" and the accidental leakage of intellectual property between client projects. OpenCode Secured implements **Project-Scoped Memory**:
+OpenCode Secured provides project-scoped isolation by default:
 
-- **Siloed Persistence:** By creating a local `.local/share/opencode-memory` directory, you ensure the agent's learned patterns remain bound to the specific project architecture.
+- **Project Directory as Base:** The wrapper uses the current project directory (`$PROJECT_DIR`) as the base for all opencode data storage, keeping each project's data separate.
 
-- **Clean Transitions:** Switching repositories instantly provides the agent with a "clean slate", preventing hallucinations based on stale data from unrelated codebases.
+- **Clean Sessions:** Each project gets its own isolated cache, config, and session data directories, preventing cross-project contamination.
 
 ```bash
-# Enable project-level memory isolation
-mkdir -p .local/share/opencode-memory
-
-# Memory is now scoped to this project directory
+# Run from any project directory - data stays within that project
 opencode
 ```
 
-Without that directory, opencode falls back to `$HOME` for memory storage — suitable for quick, ephemeral sessions where context isolation is not a concern.
+Volume mounts in docker-compose.yaml ensure `.cache/opencode`, `.config/opencode`, and `.local/share/opencode` are persisted to the host at the project's directory level.
 
 ---
 

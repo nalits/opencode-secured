@@ -18,37 +18,7 @@
 # Set the project directory to the current working directory if not explicitly specified
 # This determines where opencode will look for files and where mounted volumes point
 export PROJECT_DIR="${PROJECT_DIR:-$PWD}"
-
-# Check if the project directory contains the expected opencode configuration and memory directories
-# If both exist, use PROJECT_DIR as BASE_DIR for storing opencode data (config, memory, etc.)
-# Otherwise, fall back to the user's home directory for opencode data storage
-if [ -d "$PROJECT_DIR/.local/share/opencode-memory" ]; then
-    export BASE_DIR="$PROJECT_DIR"
-else
-    export BASE_DIR="$HOME"
-fi
-
-# Ensure required directories and files exist for docker-compose volumes
-# If these don't exist, docker-compose will create them as root during the first run
-# This would cause permission issues when the container tries to write to them
-# Creating them beforehand ensures they are owned by the current user
-
-# Create the opencode memory data directory if it doesn't exist
-if [ ! -d "$BASE_DIR/.local/share/opencode-memory" ]; then
-    mkdir -p "$BASE_DIR/.local/share/opencode-memory"
-fi
-
-# Create an empty memory database file if it doesn't exist
-# This file stores AI model data and user memories
-if [ ! -f "$BASE_DIR/.local/share/opencode-memory/data.db" ]; then
-    touch "$BASE_DIR/.local/share/opencode-memory/data.db"
-fi
-
-# Create an empty log file for opencode-mem if it doesn't exist
-# This log file stores debugging and monitoring information for the memory system
-if [ ! -f "$BASE_DIR/.local/share/opencode-memory/opencode-mem.log" ]; then
-    touch "$BASE_DIR/.local/share/opencode-memory/opencode-mem.log"
-fi
+export BASE_DIR="${PROJECT_DIR}"
 
 # Get the directory where this script is located
 # This allows the script to be run from anywhere (e.g., symlinked to PATH)

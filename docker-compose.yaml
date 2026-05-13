@@ -38,11 +38,7 @@ services:
       # Persist session data, auth, logs, project specific data
       # These files are stored in ~/.local/share/opencode/ on the host
       - ${BASE_DIR:-~}/.local/share/opencode/:/home/developer/.local/share/opencode/:rw,Z
-      # Persist memory data and its logs, avoiding overwriting the model files on each container start, and allowing the memory to persist across container restarts
-      # The memory database stores AI model data and user memories
-      - ${BASE_DIR:-~}/.local/share/opencode-memory/data.db:/home/developer/.local/share/opencode-memory/data.db:rw,Z
-      # Mount the opencode-mem log file for debugging and monitoring
-      - ${BASE_DIR:-~}/.local/share/opencode-memory/opencode-mem.log:/home/developer/.local/share/opencode-memory/opencode-mem.log:rw,Z
+      - ${BASE_DIR:-~}/.local/state/opencode/:/home/developer/.local/state/opencode/:rw,Z
 
     # Set the default working directory inside the container when it starts
     # This is where opencode will look for files and run commands
