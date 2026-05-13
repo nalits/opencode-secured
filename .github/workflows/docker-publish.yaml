@@ -57,6 +57,8 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: docker.io/nalits/opencode-secured:amd64
+          provenance: true
+          sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -86,6 +88,8 @@ jobs:
           push: true
           platforms: linux/arm64
           tags: docker.io/nalits/opencode-secured:arm64
+          provenance: true
+          sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
