@@ -1,5 +1,5 @@
 # Builder stage: A multi-stage docker build that downloads and installs opencode in a temporary build container
-FROM debian:stable-slim AS builder
+FROM ubuntu:24.04 AS builder
 
 # Set the working directory inside the builder container where all build commands will execute
 WORKDIR /build
@@ -17,7 +17,7 @@ RUN apt-get update \
 RUN curl -fsSL https://opencode.ai/install | bash
 
 # Runner stage: The final runtime container that will be used to run opencode
-FROM debian:stable-slim
+FROM ubuntu:24.04
 
 # Set environment variables for the container:
 # HOME: The home directory for the developer user
